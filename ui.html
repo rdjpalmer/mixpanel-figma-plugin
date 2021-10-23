@@ -1,0 +1,68 @@
+<h2>Shape Creator</h2>
+<p>Count: <input id="count" type="number" value="5"></p>
+<button id="create">Create</button>
+<button id="cancel">Cancel</button>
+<script>
+class Mixpanel {
+  projectId = null;
+  distinctId = null;
+
+  constructor(projectId) {
+    if (!projectId) {
+      throw new Error("Mixpanel: must be initialised with your projectId")
+    }
+
+    this.projectId = projectId;
+  }
+
+  identify(distinctId) {
+    this.distinctId = distinctId;
+  }
+
+  track(eventName, properties) {
+    if (!this.distinctId) {
+      throw new Error("Mixpanel: Please call identify before calling any other method");
+    }
+
+    const options = {
+      method: 'POST',
+      headers: {Accept: 'text/plain', 'Content-Type': 'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({
+        data: JSON.stringify({
+          event: eventName,
+          properties: {
+            ...properties,
+            distinct_id: this.distinctId,
+            token: this.projectId
+          }
+        })
+      })
+    };
+
+    return fetch('https://api.mixpanel.com/track', options);
+  }
+}
+
+document.getElementById('create').onclick = () => {
+  const textbox = document.getElementById('count');
+  const count = parseInt(textbox.value, 10);
+  parent.postMessage({ pluginMessage: { type: 'create-shapes', count } }, '*')
+  mixpanel.track("Create Clicked");
+}
+
+document.getElementById('cancel').onclick = () => {
+  parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')
+  mixpanel.track("Cancel Clicked");
+}
+
+const mixpanel = new Mixpanel(/* MIXPANEL PROJECT ID */);
+
+window.onmessage = async (event) => {
+  const message = event.data.pluginMessage;
+
+  if (message.type === "identify") {
+    mixpanel.identify(message.userId);
+    mixpanel.track("Plugin Started");
+  }
+}
+</script>

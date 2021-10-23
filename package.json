@@ -1,0 +1,14 @@
+{
+  "name": "figma-analytics",
+  "version": "1.0.0",
+  "description": "Your Figma plugin",
+  "main": "code.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc --watch -p tsconfig.json"
+  },
+  "author": "",
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.37.0"
+  }
+}
